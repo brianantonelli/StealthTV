@@ -1,3 +1,5 @@
+app:
+  port: 7777
 lift:
   gpio: "17"
   up: "2526929"

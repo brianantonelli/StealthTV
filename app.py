@@ -51,3 +51,7 @@ def tv_power(power='on'):
         # TODO: does standby work with this lib or do we need to send the opcode?
 
     return 'ok'
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0:{}".format(cfg.app.port), debug=True)
