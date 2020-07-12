@@ -171,7 +171,6 @@ def handle_non_discovery_v3(request):
             direction = "up" if request_name == "TurnOn" else "down"
             send_lift_request(direction)
 
-
         response = {
             "context": {
                 "properties": [

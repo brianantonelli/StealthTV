@@ -7,5 +7,11 @@ lift:
   protocol: "1"
   length: "default"
   repeat: "10"
-  code_up: "2526929"
-  code_down: "2526932"
+  code:
+    up: "2526929"
+    down: "2526932"
+tv:
+  code:
+    on: ""
+    off: ""
+    set_input: ""

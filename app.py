@@ -34,21 +34,23 @@ def index():
 def move_lift(direction='up'):
     logging.info('move lift: %s', direction)
     if direction == 'up':
-        transmit_lift_code(cfg.lift.code_up)
+        transmit_lift_code(cfg.lift.code.up)
     else:
-        transmit_lift_code(cfg.lift.code_down)
+        transmit_lift_code(cfg.lift.code.down)
 
     return 'ok'
 
 @app.route('/tv_power/<power>', methods=['POST'])
 def tv_power(power='on'):
     logging.info('set tv power: %s', power)
+    destination = cec.CECDEVICE_BROADCAST
+
     if power == 'on':
         cec_device.power_on()
-        # TODO: switch input
     else:
         cec_device.standby()
-        # TODO: does standby work with this lib or do we need to send the opcode?
+        # opcode = cec.CEC_OPCODE_STANDBY
+        # cec.transmit(destination, opcode, str.encode(cfg.tv.code.on))
 
     return 'ok'
 
