@@ -1,15 +1,14 @@
 app:
   port: 7777
 lift:
-  gpio: "17"
-  up: "2526929"
-  pulse: "335"
-  protocol: "1"
-  length: "default"
-  repeat: "10"
+  gpio: 17
+  pulse: 335
+  protocol: 1
+  length: 24
+  repeat: 10
   code:
-    up: "2526929"
-    down: "2526932"
+    up: 2526929
+    down: 2526932
 tv:
   code:
     on: ""
