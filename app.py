@@ -3,6 +3,7 @@ import yaml
 import cec
 import RPi.GPIO as GPIO
 import atexit
+import time
 
 from flask import Flask
 from rpi_rf import RFDevice
@@ -45,6 +46,9 @@ def move_lift(direction='up'):
     logging.info('move lift: %s', direction)
     if direction == 'up':
         transmit_lift_code(cfg['lift']['code']['up'])
+        time.sleep(8)
+        transmit_lift_code(cfg['lift']['code']['down'])
+
     else:
         transmit_lift_code(cfg['lift']['code']['down'])
 
