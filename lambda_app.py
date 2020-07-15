@@ -1,5 +1,5 @@
 import logging
-import urllib.request
+from urllib import request, parse
 import os
 import json
 import uuid
@@ -50,7 +50,7 @@ APPLIANCES = [
 def lambda_handler(request, context):
     try:
         logger.info("Directive:")
-        logger.info(json.dumps(request, indent=4, sort_keys=True))
+        # logger.info(json.dumps(request, indent=4, sort_keys=True))
 
         version = get_directive_version(request)
 
@@ -68,8 +68,8 @@ def lambda_handler(request, context):
             else:
                 response = handle_non_discovery(request)
 
-        logger.info("Response:")
-        logger.info(json.dumps(response, indent=4, sort_keys=True))
+        # logger.info("Response:")
+        # logger.info(json.dumps(response, indent=4, sort_keys=True))
 
         return response
     except ValueError as error:
@@ -156,7 +156,10 @@ def handle_discovery_v3(request):
 def handle_non_discovery_v3(request):
     request_namespace = request["directive"]["header"]["namespace"]
     request_name = request["directive"]["header"]["name"]
-    endpoint_id = request["directive"]["endpoint"]["endpointId"]
+    device_id = request["directive"]["endpoint"]["endpointId"]
+    
+    logger.info("v3 non discovery")
+    logger.info("namespace: {}, req name: {}, device: {}".format(request_namespace, request_name, device_id))
 
     if request_namespace == "Alexa.PowerController":
         if request_name == "TurnOn":
@@ -164,12 +167,14 @@ def handle_non_discovery_v3(request):
         else:
             value = "OFF"
 
-        if endpoint_id == "smarttv-002":
-            power = "on" if request_name == "TurnOn" else "off"
+        if device_id == "smarttv-002":
+            power = "on" if value == "ON" else "off"
             send_tv_request(power)
-        elif endpoint_id == "lift":
-            direction = "up" if request_name == "TurnOn" else "down"
+        elif device_id == "smarttv-001":
+            direction = "up" if value == "ON" else "down"
             send_lift_request(direction)
+        else:
+            logger.info("unknown device_id: " + device_id)
 
         response = {
             "context": {
@@ -277,10 +282,52 @@ def get_endpoint_by_endpoint_id(endpoint_id):
         return get_endpoint_from_v2_appliance(appliance)
     return None
 
+# This is the function to handle the event request. The event will be generated when you talk to Alexa Echo with a valid request.
+# See https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/smart-home-skill-api-reference#onoff-messages
+def handleControl(event):
+    name = "TurnOnConfirmation"
+
+    event_name = event["header"]["name"]
+    applianceId = event["payload"]["appliance"]["applianceId"]
+
+    if event_name == "TurnOnRequest":
+        name = "TurnOnConfirmation"
+    elif event_name == "TurnOffRequest":
+        name = "TurnOffConfirmation"
+
+    if applianceId == "tv":
+        power = "on" if event_name == "TurnOnRequest" else "off"
+        send_tv_request(power)
+    elif applianceId == "lift":
+        direction = "up" if event_name == "TurnOnRequest" else "down"
+        send_lift_request(direction)
+    else:
+        logger.info("unknown appliance: " + applianceId)
+
+    header = {
+        "namespace": "Alexa.ConnectedHome.Control",
+        "name": name,
+        "payloadVersion": "2",
+    }
+    return {
+        "header": header,
+        "payload": {}
+    }
+
 def send_tv_request(power):
     url = "{}/tv_power/{}".format(base_url, power)
-    urllib.request.urlopen(url)
+    logger.info("TV POWER")
+    post(url)
 
 def send_lift_request(direction):
     url = "{}/move_lift/{}".format(base_url, direction)
-    urllib.request.urlopen(url)
+    logger.info("MOVE LIFT")
+    post(url)
+    
+def post(url):
+    logger.info("POST: {}"format(url)
+    data = b'{}'
+    req = request.Request(url, data)
+    resp = request.urlopen(req).read().decode('utf-8')
+    logger.info("POST Response: {}".format(resp))
+  
