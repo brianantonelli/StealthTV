@@ -282,38 +282,6 @@ def get_endpoint_by_endpoint_id(endpoint_id):
         return get_endpoint_from_v2_appliance(appliance)
     return None
 
-# This is the function to handle the event request. The event will be generated when you talk to Alexa Echo with a valid request.
-# See https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/smart-home-skill-api-reference#onoff-messages
-def handleControl(event):
-    name = "TurnOnConfirmation"
-
-    event_name = event["header"]["name"]
-    applianceId = event["payload"]["appliance"]["applianceId"]
-
-    if event_name == "TurnOnRequest":
-        name = "TurnOnConfirmation"
-    elif event_name == "TurnOffRequest":
-        name = "TurnOffConfirmation"
-
-    if applianceId == "tv":
-        power = "on" if event_name == "TurnOnRequest" else "off"
-        send_tv_request(power)
-    elif applianceId == "lift":
-        direction = "up" if event_name == "TurnOnRequest" else "down"
-        send_lift_request(direction)
-    else:
-        logger.info("unknown appliance: " + applianceId)
-
-    header = {
-        "namespace": "Alexa.ConnectedHome.Control",
-        "name": name,
-        "payloadVersion": "2",
-    }
-    return {
-        "header": header,
-        "payload": {}
-    }
-
 def send_tv_request(power):
     url = "{}/tv_power/{}".format(base_url, power)
     logger.info("TV POWER")
